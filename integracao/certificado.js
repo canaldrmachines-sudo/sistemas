@@ -1,4 +1,4 @@
-/* Certificado de conclusão + registro na planilha (Google Forms) — Programa de Integração DR Machines */
+/* Certificado de conclusão do Programa + registro na planilha (Google Forms) — Programa de Integração DR Machines */
 (function () {
   const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScKRndblI6rjvYGXxfWSAKxZYGn0qkY677Tpv0p6Cxwn1Z16g/formResponse';
   const F = { nome: 'entry.185177776', modulo: 'entry.819511712', data: 'entry.773746041' };
@@ -35,7 +35,7 @@
   .cert .c{font-size:1.75cqw;color:#55595f;margin:0}
   .cert .nome{font-family:Montserrat,sans-serif;font-weight:800;font-size:4.2cqw;color:#17181b;margin:1.6% 0 1.2%;line-height:1.15}
   .cert .sub{width:30%;height:.35cqw;background:#f7914d;margin:0 auto 2.6%}
-  .cert .txt{font-size:1.75cqw;line-height:1.6;color:#3a3d42;max-width:80%;margin:0 auto}
+  .cert .txt{font-size:1.6cqw;line-height:1.6;color:#3a3d42;max-width:84%;margin:0 auto}
   .cert .txt b{color:#17181b}
   .cert .foot{position:absolute;left:8%;right:8%;bottom:7%;display:flex;justify-content:space-between;align-items:flex-end;font-size:1.25cqw;color:#7a7e84}
   .cert .foot .sig{text-align:center;min-width:32%}
@@ -63,10 +63,10 @@
     <form class="cx-box" id="cx-form">
       <div class="kick" id="cx-k">Módulo concluído</div>
       <h3 id="cx-h">Parabéns!</h3>
-      <p>Digite seu nome completo, como deve aparecer no certificado.</p>
+      <p id="cx-p">Digite seu nome completo.</p>
       <input id="cx-in" type="text" autocomplete="name" maxlength="80" placeholder="Nome completo">
       <div class="cx-err" id="cx-err"></div>
-      <div class="cx-row"><button class="big" type="submit">Gerar meu certificado</button></div>
+      <div class="cx-row"><button class="big" type="submit">Registrar conclusão</button></div>
     </form>
   </div>
   <div class="cx-back" id="cx-cert" hidden role="dialog" aria-modal="true">
@@ -96,64 +96,81 @@
     box.querySelector('.nome').textContent = nome;
     const t = box.querySelector('.txt');
     t.append('concluiu o ');
-    const b = document.createElement('b'); b.textContent = nomeModulo(m); t.append(b);
-    t.append(' do Programa de Integração do Grupo DR Machines, em ' + dataExtenso(d) + '.');
+    const b = document.createElement('b'); b.textContent = 'Programa de Integração do Grupo DR Machines'; t.append(b);
+    t.append(', em ' + dataExtenso(d) + ', composto pelos módulos: ' + MODULES.map(x => x.title).join(', ') + '.');
     return box;
   }
 
-  function mostrarCert(m) {
-    const st = load(); const reg = st[m.id];
-    if (!reg || !st.nome) { pedirNome(m); return; }
-    const p = $('#cx-print'); p.innerHTML = ''; p.appendChild(certHTML(st.nome, m, reg.data));
+  function tudoConcluido() { return MODULES.every(x => ms(x).done); }
+
+  function mostrarCert() {
+    const st = load();
+    if (!st.nome || !st.final) return;
+    const p = $('#cx-print'); p.innerHTML = ''; p.appendChild(certHTML(st.nome, null, st.final));
     $('#cx-cert').hidden = false;
-    document.title = 'Certificado — ' + nomeModulo(m) + ' — ' + st.nome;
+    document.title = 'Certificado — Programa de Integração — ' + st.nome;
   }
 
   function pedirNome(m) {
     atual = m;
     $('#cx-k').textContent = nomeModulo(m) + ' concluído';
+    $('#cx-h').textContent = 'Parabéns!';
+    $('#cx-p').textContent = 'Digite seu nome completo para registrar sua conclusão. Ao final de todos os módulos, ele aparecerá no seu certificado.';
     $('#cx-in').value = load().nome || '';
     $('#cx-err').textContent = '';
     $('#cx-nome').hidden = false;
     setTimeout(() => $('#cx-in').focus(), 50);
   }
 
-  function enviar(nome, m, d) {
+  function enviar(nome, rotulo, d) {
     const body = new URLSearchParams();
     body.append(F.nome, nome);
-    body.append(F.modulo, nomeModulo(m));
+    body.append(F.modulo, rotulo);
     body.append(F.data + '_year', d.getFullYear());
     body.append(F.data + '_month', d.getMonth() + 1);
     body.append(F.data + '_day', d.getDate());
     return fetch(FORM, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
   }
 
+  // registra a conclusão de um módulo (uma vez por módulo) e, se for o último, o programa completo
+  function registrar(m) {
+    const st = load(); const d = new Date();
+    st.mods = st.mods || {};
+    if (!st.mods[m.id]) { st.mods[m.id] = d.toISOString(); enviar(st.nome, nomeModulo(m), d); }
+    if (tudoConcluido() && !st.final) {
+      st.final = d.toISOString(); save(st);
+      enviar(st.nome, 'PROGRAMA COMPLETO — certificado emitido', d);
+      setTimeout(mostrarCert, 400);
+    } else save(st);
+    if (typeof updateNow === 'function') updateNow();
+  }
+
   $('#cx-form').addEventListener('submit', e => {
     e.preventDefault();
     const nome = $('#cx-in').value.replace(/\s+/g, ' ').trim();
     if (nome.split(' ').length < 2 || nome.length < 5) { $('#cx-err').textContent = 'Digite nome e sobrenome.'; return; }
-    const m = atual; const st = load(); const d = new Date();
-    st.nome = nome;
-    const jaEnviado = st[m.id] && st[m.id].enviado && st[m.id].nome === nome;
-    st[m.id] = { data: (st[m.id] && st[m.id].data) || d.toISOString(), enviado: true, nome };
-    save(st);
-    if (!jaEnviado) enviar(nome, m, d);
+    const st = load(); st.nome = nome; save(st);
     $('#cx-nome').hidden = true;
-    mostrarCert(m);
+    registrar(atual);
   });
   $('#cx-close').onclick = () => { $('#cx-cert').hidden = true; document.title = 'Programa de Integração — Grupo DR Machines'; };
   $('#cx-pdf').onclick = () => window.print();
   window.addEventListener('afterprint', () => { document.title = 'Programa de Integração — Grupo DR Machines'; });
 
-  // ao concluir um módulo: pede o nome, registra e mostra o certificado
-  window.addEventListener('modulo-concluido', e => { const m = e.detail; setTimeout(() => pedirNome(m), 600); });
+  // ao concluir um módulo: pede o nome só na primeira vez; depois registra direto
+  window.addEventListener('modulo-concluido', e => {
+    const m = e.detail;
+    setTimeout(() => { if (load().nome) registrar(m); else pedirNome(m); }, 600);
+  });
 
-  // botão "Ver certificado" na faixa de módulo concluído
+  // botão "Ver certificado" na faixa de módulo concluído (só depois do programa completo)
   const banner = $('#doneb');
   if (banner) {
     const btn = document.createElement('button');
-    btn.className = 'big cx-cert-btn'; btn.type = 'button'; btn.textContent = 'Ver meu certificado';
-    btn.onclick = () => mostrarCert(MODULES[cur.m]);
+    btn.className = 'big cx-cert-btn'; btn.type = 'button'; btn.textContent = 'Ver meu certificado do Programa';
+    btn.onclick = () => mostrarCert();
     banner.style.flexWrap = 'wrap'; banner.appendChild(btn);
+    const sync = () => { btn.hidden = !load().final; };
+    sync(); setInterval(sync, 1500);
   }
 })();
