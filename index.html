@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistemas — Grupo DR Machines</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0f11;--card:#1d1f22;--line:#33373d;--or:#f7914d;--or2:#de6822;--tx:#f3f3f3;--mut:#a8adb4;--mut2:#6e737a}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:radial-gradient(1100px 600px at 85% -10%,#2a2016 0%,transparent 60%),var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:36px 28px 60px}
+  header{display:flex;align-items:center;gap:20px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+  header img{height:64px}
+  .kick{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--or);font-weight:600}
+  h1{font-family:Montserrat;font-size:26px;margin:2px 0 0}
+  .intro{color:var(--mut);margin:30px 0 22px;font-size:15px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  a.card,.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;transition:transform .2s,border-color .2s,box-shadow .2s}
+  a.card:hover{transform:translateY(-3px);border-color:var(--or);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+  .ic{width:58px;height:58px;border-radius:16px;background:var(--or);display:grid;place-items:center;margin-bottom:18px}
+  .card h2{font-family:Montserrat;font-size:19px;margin:0 0 6px}
+  .card p{margin:0;color:var(--mut);font-size:14px;line-height:1.5}
+  .go{margin-top:18px;font-weight:600;color:var(--or);font-size:14px}
+  .soon{opacity:.55;border-style:dashed}
+  .soon .ic{background:#2a2d31}
+  footer{margin-top:50px;color:var(--mut2);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="data:image/png;base64,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" alt="DR Machines — manutenção e automação">
+    <div><div class="kick">Grupo DR Machines</div><h1>Sistemas internos</h1></div>
+  </header>
+  <p class="intro">Pessoas conectadas. Empresas integradas. Um só propósito.</p>
+  <div class="grid">
+    <a class="card" href="integracao/">
+      <div class="ic"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="#151515"/></svg></div>
+      <h2>Programa de Integração</h2>
+      <p>Treinamento em vídeo para novos colaboradores e reciclagem da equipe. Módulos 1 e 2 disponíveis.</p>
+      <div class="go">Acessar →</div>
+    </a>
+    <div class="card soon">
+      <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#a8adb4" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+      <h2>Novos sistemas</h2>
+      <p>Em breve, outras ferramentas e materiais do grupo estarão disponíveis aqui.</p>
+    </div>
+  </div>
+  <footer>© Grupo DR Machines • Uso interno</footer>
+</div>
+</body>
+</html>
