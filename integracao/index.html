@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programa de Integração — Grupo DR Machines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f11; --bg2:#17181b; --card:#1f2124; --card2:#26292d; --line:#33373d;
+    --or:#f7914d; --or2:#de6822; --tx:#f3f3f3; --mut:#a8adb4; --mut2:#6e737a; --ok:#5fc48a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5}
+  body{background:radial-gradient(1200px 600px at 85% -10%,#2a2016 0%,transparent 60%),var(--bg);min-height:100vh}
+  h1,h2,h3{font-family:Montserrat,sans-serif;margin:0;letter-spacing:-.01em}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .wrap{max-width:1360px;margin:0 auto;padding:22px 28px 60px}
+  header{display:flex;align-items:center;gap:20px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  header img{height:54px}
+  .kick{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--or);font-weight:600}
+  header h1{font-size:22px;font-weight:700;margin-top:2px}
+  .hello{margin-left:auto;text-align:right;color:var(--mut);font-size:13px}
+  .hello b{color:var(--tx);font-weight:600}
+  .overall{display:flex;align-items:center;gap:14px;margin:22px 0 22px}
+  .bar{flex:1;height:8px;border-radius:8px;background:var(--card2);overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--or2),var(--or));border-radius:8px;transition:width .6s}
+  .overall span{font-size:13px;color:var(--mut);white-space:nowrap}
+  .tabs{display:flex;gap:6px;margin-bottom:18px}
+  .tabs button{background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 16px;color:var(--mut);font-size:13px;font-weight:500}
+  .tabs button[aria-selected=true]{background:var(--or);border-color:var(--or);color:#151515;font-weight:600}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:26px;align-items:start}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .player{background:#000;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/9;box-shadow:0 20px 50px rgba(0,0,0,.45);border:1px solid #2a2c30}
+  .player video{width:100%;height:100%;display:block;background:#000}
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,10,12,.88);text-align:center;padding:20px}
+  .overlay[hidden]{display:none}
+  .spin{width:42px;height:42px;border-radius:50%;border:3px solid #3a3d42;border-top-color:var(--or);animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .overlay .pct{font-size:13px;color:var(--mut)}
+  .big{background:var(--or);color:#151515;border:0;border-radius:999px;padding:12px 26px;font-weight:700;font-family:Montserrat;font-size:15px}
+  .big:disabled{opacity:.4;cursor:default}
+  .ghost{background:transparent;border:1px solid var(--line);border-radius:999px;padding:9px 18px;color:var(--tx);font-size:13px}
+  .ghost:disabled{opacity:.35;cursor:default}
+  .now{display:flex;align-items:center;gap:14px;margin:18px 2px 0;flex-wrap:wrap}
+  .now h2{font-size:22px;font-weight:700}
+  .now .meta{color:var(--mut);font-size:13px}
+  .now .sp{flex:1}
+  .done-banner{margin-top:18px;border:1px solid var(--or2);background:linear-gradient(90deg,#2a1d13,#1d1e21);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:16px}
+  .done-banner[hidden]{display:none}
+  .done-banner .ck{width:44px;height:44px;border-radius:50%;background:var(--or);display:grid;place-items:center;flex:none}
+  .done-banner h3{font-size:17px}
+  .done-banner p{margin:2px 0 0;color:var(--mut);font-size:13.5px}
+  aside{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:8px}
+  .mod{border-radius:12px}
+  .mod+.mod{margin-top:4px}
+  .modhead{width:100%;display:flex;align-items:center;gap:12px;background:transparent;border:0;padding:12px;text-align:left;border-radius:12px}
+  .modhead:hover:not(:disabled){background:var(--card)}
+  .modhead:disabled{cursor:default}
+  .num{width:34px;height:34px;border-radius:10px;background:var(--card2);display:grid;place-items:center;font-family:Montserrat;font-weight:800;font-size:13px;color:var(--mut);flex:none}
+  .mod.open .num,.mod.cur .num{background:var(--or);color:#151515}
+  .mod.done .num{background:#20372a;color:var(--ok)}
+  .modhead .t{font-family:Montserrat;font-weight:700;font-size:14px;line-height:1.25}
+  .modhead .s{font-size:12px;color:var(--mut2);margin-top:2px}
+  .lock{margin-left:auto;color:var(--mut2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+  .chs{list-style:none;margin:0 0 8px;padding:0 6px 4px 52px}
+  .chs[hidden]{display:none}
+  .ch{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;border-radius:9px;padding:8px 10px;text-align:left;color:var(--tx);font-size:13.5px}
+  .ch:hover:not(:disabled){background:var(--card)}
+  .ch:disabled{color:var(--mut2);cursor:default}
+  .ch.active{background:var(--card2);box-shadow:inset 3px 0 0 var(--or)}
+  .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+  .ch.ok .dot{background:var(--ok);border-color:var(--ok)}
+  .ch.active .dot{border-color:var(--or)}
+  .ch .d{margin-left:auto;color:var(--mut2);font-size:12px}
+  .note{font-size:12px;color:var(--mut2);margin:10px 6px 4px;line-height:1.45}
+  .panel[hidden]{display:none}
+  table{width:100%;border-collapse:collapse;background:var(--bg2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+  th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:600;background:#1b1c1f}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .pill.ok{background:#20372a;color:var(--ok)} .pill.mid{background:#3a2a1c;color:var(--or)} .pill.no{background:var(--card2);color:var(--mut)}
+  .minibar{width:120px;height:6px;border-radius:6px;background:var(--card2);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+  .minibar i{display:block;height:100%;background:var(--or)}
+  .empty{color:var(--mut);padding:28px;text-align:center;background:var(--bg2);border:1px dashed var(--line);border-radius:14px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="../" title="Voltar aos sistemas"><img src="data:image/png;base64,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" alt="DR Machines — manutenção e automação"></a>
+    <div>
+      <div class="kick">Programa de Integração</div>
+      <h1>Grupo DR Machines</h1>
+    </div>
+    <div class="hello" id="hello">Pessoas conectadas. Empresas integradas. Um só propósito.</div>
+  </header>
+
+  <div class="overall"><div class="bar"><i id="ovbar"></i></div><span id="ovtxt">0 de 6 módulos concluídos</span></div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="curso">Treinamento</button>
+
+  </div>
+
+  <section class="panel" id="p-curso">
+    <div class="grid">
+      <div>
+        <div class="player">
+          <video id="vid" playsinline controls preload="none" poster=""></video>
+          <div class="overlay" id="ov">
+            <div class="kick" id="ovk">Módulo 1 • Bem-vindo</div>
+            <h2 id="ovt" style="font-size:26px">Comece sua integração</h2>
+            <p id="ovp" style="margin:0;color:var(--mut);max-width:460px">Assista às partes em sequência. Cada parte libera a próxima.</p>
+            <button class="big" id="ovb">▶ Assistir</button>
+          </div>
+          <div class="overlay" id="ld" hidden><div class="spin"></div><div class="pct" id="ldp">Carregando vídeo…</div></div>
+        </div>
+        <div class="now">
+          <div>
+            <div class="kick" id="nowk">Módulo 1 • Bem-vindo</div>
+            <h2 id="nowt">Boas-vindas ao Grupo DR Machines</h2>
+            <div class="meta" id="nowm">Parte 1 de 6</div>
+          </div>
+          <div class="sp"></div>
+          <button class="ghost" id="cc" aria-pressed="false">Legendas: desligadas</button>
+          <button class="ghost" id="prev">← Anterior</button>
+          <button class="ghost" id="next">Próxima →</button>
+        </div>
+        <div class="done-banner" id="doneb" hidden>
+          <div class="ck"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#151515" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><h3 id="doneh">Módulo concluído</h3><p id="donep">Juntos, construímos o futuro do Grupo DR Machines.</p></div>
+        </div>
+      </div>
+      <aside id="mods"></aside>
+    </div>
+  </section>
+
+  <section class="panel" id="p-equipe" hidden>
+    <div class="kick" style="margin-bottom:10px">Visível apenas para quem administra a página</div>
+    <div id="team"></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const MODULES = [
+  {id:'m1', n:1, title:'Bem-vindo', sub:'Quem somos, nosso grupo e nossa cultura', ready:true, chapters:[
+    {t:'Boas-vindas ao Grupo DR Machines', f:'m1/c1'},
+    {t:'Quem somos', f:'m1/c2'},
+    {t:'Nosso grupo, nossa força', f:'m1/c3'},
+    {t:'Como trabalhamos juntos', f:'m1/c4'},
+    {t:'Não somos equipes concorrentes', f:'m1/c5'},
+    {t:'Nossa cultura: cinco pilares', f:'m1/c6'},
+  ]},
+  {id:'m2', n:2, title:'Comportamento e postura', sub:'Postura profissional, uniforme e segurança', ready:true, chapters:[
+    {t:'Postura profissional', f:'m2/c1'},
+    {t:'Uniforme e vestimenta', f:'m2/c2'},
+    {t:'Segurança no trabalho', f:'m2/c3'},
+  ]},
+  {id:'m3', n:3, title:'Jornada e registro de ponto', sub:'Em produção', ready:false, chapters:[]},
+  {id:'m4', n:4, title:'Rotinas operacionais', sub:'Em produção', ready:false, chapters:[]},
+  {id:'m5', n:5, title:'Direitos, benefícios e políticas', sub:'Em produção', ready:false, chapters:[]},
+  {id:'m6', n:6, title:'Integração e compromisso', sub:'Em produção', ready:false, chapters:[]},
+];
+const DUR = {"m1/c1": 64.7, "m1/c2": 82.5, "m1/c3": 90.9, "m1/c4": 76.2, "m1/c5": 62.2, "m1/c6": 79.1, "m2/c1": 60.9, "m2/c2": 61.0, "m2/c3": 110.6};
+const VTT = {"m1/c1": "WEBVTT\n\n00:00:04.750 --> 00:00:08.290\nSeja muito bem-vindo ao Grupo DR Machines.\n\n00:00:08.570 --> 00:00:13.650\nNós preparamos essa apresentação para\nque você conheça melhor a nossa empresa,\n\n00:00:13.850 --> 00:00:19.270\nentenda como nós trabalhamos e\nprincipalmente saiba quais são os valores,\n\n00:00:19.370 --> 00:00:23.870\nos procedimentos e as responsabilidades\nque fazem parte da nossa rotina.\n\n00:00:24.150 --> 00:00:29.530\nSe você está chegando agora, queremos\nque você sinta-se parte dessa equipe\n\n00:00:29.550 --> 00:00:32.270\ndesde o primeiro dia e\nseja muito bem-vindo.\n\n00:00:32.410 --> 00:00:36.750\nAgora se você já trabalha conosco,\nesse treinamento também é super importante\n\n00:00:36.770 --> 00:00:42.210\npara que a gente consiga reforçar os nossos\nprocedimentos e alinhar algumas orientações.\n\n00:00:42.310 --> 00:00:47.050\nO nosso objetivo, ele não é\nsimplesmente apresentar algumas regras,\n\n00:00:47.070 --> 00:00:52.570\nmas mostrar como cada pessoa contribui\npara o crescimento do nosso grupo.\n\n00:00:52.670 --> 00:00:58.410\nAfinal, a empresa não cresce\napenas com bons produtos\n\n00:00:58.430 --> 00:01:03.470\nou bons equipamentos, ela cresce com\npessoas comprometidas que trabalham juntas\n\n00:01:03.490 --> 00:01:04.690\nna mesma direção.\n", "m1/c2": "WEBVTT\n\n00:00:00.000 --> 00:00:00.000\nna mesma direção.\n\n00:00:00.450 --> 00:00:02.350\nEntão quem somos?\n\n00:00:02.450 --> 00:00:07.330\nA DR Machines atua no mercado\ninstitucional e industrial de limpeza,\n\n00:00:07.350 --> 00:00:11.870\noferecendo soluções completas\npara diferentes segmentos.\n\n00:00:12.130 --> 00:00:16.190\nNós trabalhamos então com a comercialização\nde lava-louças industriais,\n\n00:00:16.230 --> 00:00:21.970\nequipamentos, peças, sistema de dosagem,\ndiluição de produtos químicos,\n\n00:00:22.030 --> 00:00:27.470\nsoluções para automação na parte de\nlavanderias e nós também atuamos com a\n\n00:00:27.490 --> 00:00:33.070\nparte de locação, instalação,\nmanutenção, assistência técnica.\n\n00:00:33.170 --> 00:00:37.870\nOs nossos clientes estão\nentão em diversos setores.\n\n00:00:37.970 --> 00:00:43.870\nEntão nós temos clientes em\nrestaurante, hotéis, hospitais,\n\n00:00:43.890 --> 00:00:49.550\ncozinhas industriais, lavanderias,\nsupermercados e dentre\n\n00:00:49.570 --> 00:00:50.850\noutras indústrias.\n\n00:00:50.950 --> 00:00:56.430\nAo longo da nossa trajetória nós construímos\nconhecimento técnico e experiência\n\n00:00:56.450 --> 00:01:00.510\npara que a gente consiga atender os\nclientes que precisam de equipamentos\n\n00:01:00.530 --> 00:01:02.870\nconfiáveis e serviços de qualidade.\n\n00:01:02.970 --> 00:01:05.170\nE é importante entender uma coisa.\n\n00:01:05.350 --> 00:01:10.510\nQuando o cliente procura a DR Machines,\nele não está comprando apenas um equipamento.\n\n00:01:10.650 --> 00:01:15.690\nEle está buscando uma solução para sua\noperação e é da nossa responsabilidade\n\n00:01:15.710 --> 00:01:20.770\ntrabalhar para que essa solução ela seja\nentregue com qualidade desde o primeiro\n\n00:01:20.790 --> 00:01:22.450\ncontato até o pós-venda.\n", "m1/c3": "WEBVTT\n\n00:00:00.450 --> 00:00:04.430\nAgora eu quero chamar uma atenção\npara um assunto muito importante.\n\n00:00:04.530 --> 00:00:10.650\nA DR Machines e a DR Machines Prime fazem\nparte de um mesmo grupo empresarial.\n\n00:00:10.750 --> 00:00:17.570\nEmbora sejam duas empresas com CNPJ distintos,\nelas trabalham de forma integrada.\n\n00:00:17.630 --> 00:00:22.770\nA DR Machines atua principalmente na parte\nda comercialização dos equipamentos,\n\n00:00:22.790 --> 00:00:28.570\npeças e soluções. Já a DR Machines\nPrime é responsável principalmente pela\n\n00:00:28.590 --> 00:00:34.050\nparte de prestação de serviço técnico,\ninstalação, manutenção e operações\n\n00:00:34.070 --> 00:00:37.570\nrelacionadas à locação.\nEu vou dar um exemplo.\n\n00:00:37.670 --> 00:00:43.290\nQuando a DR Machines vende, por exemplo,\numa lava-louças industriais e\n\n00:00:43.310 --> 00:00:46.110\no cliente precisa de uma instalação.\n\n00:00:46.230 --> 00:00:49.610\nÉ a DR Machines Prime que\nrealiza esse serviço.\n\n00:00:49.830 --> 00:00:55.510\nEntão a DR Machines vende e a DR\nMachines Prime segue com a instalação.\n\n00:00:55.610 --> 00:00:58.890\nVocê percebe que uma\nempresa depende da outra?\n\n00:00:59.130 --> 00:01:02.570\nEntão, por isso, eu quero deixar\numa mensagem muito clara.\n\n00:01:02.670 --> 00:01:08.390\nNós não devemos enxergar a DR Machines\ne a DR Machines Prime como equipes\n\n00:01:08.410 --> 00:01:11.330\nconcorrentes ou equipes desconectadas.\n\n00:01:11.590 --> 00:01:16.850\nNós somos um grupo e naturalmente cada\nempresa possui as suas responsabilidades\n\n00:01:16.870 --> 00:01:22.390\nfiscais, contratuais, trabalhistas\ne elas precisam ser respeitadas.\n\n00:01:22.410 --> 00:01:26.230\nMas, operacionalmente,\nnós trabalhamos juntos.\n\n00:01:26.370 --> 00:01:29.810\nDuas empresas, um time,\ncom o mesmo propósito.\n", "m1/c4": "WEBVTT\n\n00:00:00.500 --> 00:00:05.640\nEntão, vamos entender como essa\nintegração funciona na prática.\n\n00:00:05.740 --> 00:00:11.480\nImagine que o nosso departamento\ncomercial realizou ali uma\n\n00:00:11.500 --> 00:00:13.940\nvenda de uma lava-louças industriais.\n\n00:00:14.040 --> 00:00:17.580\nPara que esse equipamento\nseja entregue para o cliente,\n\n00:00:17.600 --> 00:00:22.960\nnós precisamos de um pedido correto de\ndisponibilidade do produto e de faturamento\n\n00:00:22.980 --> 00:00:25.380\nda expedição e da entrega.\n\n00:00:25.480 --> 00:00:29.360\nDepois, nós dependemos da operação.\n\n00:00:29.480 --> 00:00:33.520\nNós precisamos de um técnico\npara realizar essa instalação e,\n\n00:00:33.540 --> 00:00:37.320\nposteriormente, nós podemos\nprecisar de uma manutenção,\n\n00:00:37.340 --> 00:00:39.120\nde um suporte técnico.\n\n00:00:39.220 --> 00:00:44.140\nOu seja, o resultado depende\nde vários departamentos.\n\n00:00:44.240 --> 00:00:47.900\nO comercial precisa do técnico.\n\n00:00:48.000 --> 00:00:50.900\nO técnico precisa das\ninformações do comercial.\n\n00:00:51.060 --> 00:00:53.520\nA expedição depende de compras.\n\n00:00:53.680 --> 00:00:58.760\nO financeiro precisa das informações\nlançadas corretas e todos precisam de\n\n00:00:58.780 --> 00:01:00.760\numa comunicação eficiente.\n\n00:01:00.980 --> 00:01:03.820\nQuando uma dessas etapas ela falha,\n\n00:01:04.120 --> 00:01:06.660\nas demais também serão prejudicadas.\n\n00:01:06.800 --> 00:01:09.900\nPor isso, não existe\num sucesso individual.\n\n00:01:10.000 --> 00:01:13.820\nQuando o resultado depende\nde uma equipe toda.\n\n00:01:13.840 --> 00:01:16.180\nEntão, o sucesso é da equipe.\n", "m1/c5": "WEBVTT\n\n00:00:00.450 --> 00:00:02.170\nDentro do nosso grupo,\n\n00:00:02.270 --> 00:00:06.330\nnós queremos fortalecer uma\ncultura de colaboração.\n\n00:00:06.350 --> 00:00:07.910\nFrases como,\n\n00:00:08.010 --> 00:00:10.030\nisso não é problema do meu departamento,\n\n00:00:10.330 --> 00:00:14.610\nessa responsabilidade é de outra empresa,\neu já fiz a minha parte,\n\n00:00:14.630 --> 00:00:16.850\nelas não contribuem para\no nosso crescimento.\n\n00:00:16.950 --> 00:00:23.250\nNós precisamos substituir esse tipo de\ncomportamento por atitudes mais construtivas.\n\n00:00:23.430 --> 00:00:24.470\nVou dar um exemplo.\n\n00:00:24.570 --> 00:00:25.750\nComo posso ajudar?\n\n00:00:25.850 --> 00:00:30.210\nVou encaminhar ao responsável,\nvou encontrar uma solução.\n\n00:00:30.310 --> 00:00:34.470\nIsso não significa que\ntodos precisam fazer tudo,\n\n00:00:34.750 --> 00:00:40.550\nmas cada departamento possui suas funções,\nresponsabilidades e liderança.\n\n00:00:40.650 --> 00:00:45.850\nOu seja, isso significa que ao\nidentificar uma necessidade ou problema,\n\n00:00:45.870 --> 00:00:49.990\nnós devemos colaborar para que essa\ninformação ela chegue à pessoa certa.\n\n00:00:50.190 --> 00:00:54.010\nNós não queremos que um cliente ele\nfique sem resposta porque uma demanda\n\n00:00:54.030 --> 00:00:56.090\npassou de um departamento para o outro.\n\n00:00:56.170 --> 00:00:59.770\nO cliente não precisa entender\nessas divisões internas.\n\n00:00:59.790 --> 00:01:02.230\nEle só precisa receber uma solução.\n", "m1/c6": "WEBVTT\n\n00:00:00.450 --> 00:00:03.690\nEntão falando um pouco\nsobre a nossa cultura.\n\n00:00:03.790 --> 00:00:08.890\nA nossa cultura é baseada em cinco\npilares que são fundamentais.\n\n00:00:09.050 --> 00:00:13.130\nO primeiro é o respeito,\nrespeitar colegas, respeitar clientes,\n\n00:00:13.150 --> 00:00:17.670\nrespeitar fornecedores e mesmo\nquando existem opiniões diferentes,\n\n00:00:17.770 --> 00:00:19.770\no respeito tem que prevalecer.\n\n00:00:19.970 --> 00:00:23.290\nO segundo é a responsabilidade.\n\n00:00:23.390 --> 00:00:28.810\nCada um precisa assumir a sua responsabilidade,\nas suas tarefas e comunicar\n\n00:00:28.830 --> 00:00:31.030\nquando algo ele não está correto.\n\n00:00:31.130 --> 00:00:33.650\nO terceiro é a colaboração.\n\n00:00:33.810 --> 00:00:38.390\nNós precisamos entender que as nossas\natividades elas estão conectadas.\n\n00:00:38.490 --> 00:00:40.890\nO quarto é o comprometimento.\n\n00:00:40.990 --> 00:00:46.850\nCumprir aquilo que foi combinado,\nrespeitar horários e buscar qualidades\n\n00:00:46.870 --> 00:00:51.430\nnas entregas. E o quinto,\nclaro, é a melhoria contínua.\n\n00:00:51.530 --> 00:00:56.590\nNós sempre podemos melhorar um processo,\nreduzir um erro ou encontrar uma\n\n00:00:56.610 --> 00:00:58.670\nmaneira mais eficiente de trabalhar.\n\n00:00:58.890 --> 00:01:03.950\nNós não queremos pessoas apenas que\nexecutem tarefas mecanicamente falando.\n\n00:01:04.170 --> 00:01:09.370\nNós queremos profissionais que pensem,\nparticipem e contribuem para o desenvolvimento\n\n00:01:09.390 --> 00:01:10.290\ndo grupo.\n", "m2/c1": "WEBVTT\n\n00:00:04.750 --> 00:00:10.290\nSejam bem-vindos ao nosso módulo\n2 sobre postura profissional.\n\n00:00:10.530 --> 00:00:16.050\nA postura profissional é uma das\nprincipais formas de representar a\n\n00:00:16.070 --> 00:00:16.970\nnossa empresa.\n\n00:00:17.210 --> 00:00:20.610\nEla aparece nas pequenas\natitudes do nosso dia a dia,\n\n00:00:20.730 --> 00:00:24.870\nna maneira de você cumprimentar seus colegas,\nna maneira de a gente atender\n\n00:00:24.890 --> 00:00:29.290\numa ligação, responder uma mensagem\nou conversar com um cliente.\n\n00:00:29.310 --> 00:00:35.650\nNós esperamos educação, pontualidade,\nrespeito e uma comunicação clara.\n\n00:00:35.910 --> 00:00:40.970\nQuando uma tarefa ela não puder ser\nconcluída, nós precisamos comunicar.\n\n00:00:41.170 --> 00:00:45.830\nQuando o cliente fizer uma solicitação,\nnós precisamos dar um retorno.\n\n00:00:45.930 --> 00:00:51.250\nQuando houver algum problema, nós devemos\nprocurar resolver de maneira profissional,\n\n00:00:51.410 --> 00:00:55.430\nsem ofensas, discussões\ndesnecessárias. E lembre-se:\n\n00:00:55.450 --> 00:01:00.910\nCada colaborador representa uma\nimagem do Grupo DR Machines.\n", "m2/c2": "WEBVTT\n\n00:00:00.450 --> 00:00:06.910\nNa DR Machines, a apresentação pessoal\ntambém faz parte de uma identidade visual.\n\n00:00:07.090 --> 00:00:12.970\nEntão, o uso de camisetas uniformes da\nempresa é obrigatório durante o expediente,\n\n00:00:12.990 --> 00:00:15.810\nporque ele representa a nossa marca.\n\n00:00:15.830 --> 00:00:21.250\nEle transmite um profissionalismo e\nfortalece a identidade visual do nosso\n\n00:00:21.270 --> 00:00:22.650\nGrupo DR Machines.\n\n00:00:22.750 --> 00:00:27.190\nEntão, é importante que todos\nmantenham-se com uniformes,\n\n00:00:27.210 --> 00:00:31.250\nuniformes limpos, conservados\ne em boas condições de uso.\n\n00:00:31.450 --> 00:00:36.970\nAlém disso, nós devemos utilizar roupas\ne calçados adequados ao ambiente de\n\n00:00:36.990 --> 00:00:40.650\ntrabalho, respeitando as orientações\ndo nosso manual interno.\n\n00:00:40.670 --> 00:00:47.270\nLembre-se, vestir o uniforme você\nestá representando a DR Machines.\n\n00:00:47.490 --> 00:00:52.150\nEntão, por isso, organização,\ncuidado, postura profissional,\n\n00:00:52.170 --> 00:00:55.150\nelas fazem parte da apresentação.\n\n00:00:55.250 --> 00:00:58.950\nEm caso de dúvidas sobre as\nregras de vestimenta e uniforme,\n\n00:00:58.970 --> 00:01:00.970\nvocê pode procurar também um RH.\n", "m2/c3": "WEBVTT\n\n00:00:00.000 --> 00:00:00.000\nvocê pode procurar também um RH.\n\n00:00:00.450 --> 00:00:06.330\nA segurança é uma responsabilidade\nde todos e, por isso,\n\n00:00:06.350 --> 00:00:12.450\né obrigatório utilizar os equipamentos\nEPIs indicados para as atividades técnicas\n\n00:00:12.470 --> 00:00:18.330\ne operacionais. Então, também não é\npermitido correr nas dependências\n\n00:00:18.350 --> 00:00:24.750\nda empresa, utilizar as escadas de maneira\nque coloque você ou alguém em risco.\n\n00:00:24.770 --> 00:00:30.610\nÉ proibido trabalhar sob efeito de álcool,\ndrogas e o uso de cigarros\n\n00:00:30.630 --> 00:00:36.150\nou dispositivos eletrônicos de fumar\nem áreas fechadas também é proibido.\n\n00:00:36.250 --> 00:00:40.990\nOutro ponto importante é o\nrespeito na comunicação.\n\n00:00:41.090 --> 00:00:46.650\nA gente não deve utilizar palavrões,\nlinguagens ofensivas durante o\n\n00:00:46.670 --> 00:00:47.810\nnosso expediente.\n\n00:00:47.910 --> 00:00:53.210\nFones de ouvido também deve ser\nutilizados apenas quando necessárias para\n\n00:00:53.230 --> 00:00:55.610\natividades relacionadas ao trabalho.\n\n00:00:55.710 --> 00:01:01.410\nAs músicas apenas em som ambiente e\nmúsicas apropriadas para um ambiente\n\n00:01:01.430 --> 00:01:05.050\nde trabalho, mantidas sempre\nem volumes moderados.\n\n00:01:05.070 --> 00:01:11.770\nNo nosso manual ele também apresenta\nalgumas orientações sobre vacinação,\n\n00:01:11.790 --> 00:01:19.350\nsaúde ocupacional que devem\nseguir determinadas orientações\n\n00:01:19.370 --> 00:01:21.110\nda medicina de trabalho.\n\n00:01:21.210 --> 00:01:25.530\nE caso você não tenha recebido\no seu manual do funcionário,\n\n00:01:25.550 --> 00:01:28.950\no manual do colaborador, você pode\ntambém entrar em contato com o seu líder\n\n00:01:28.970 --> 00:01:33.290\ndireto ou com o RH para que você\nreceba as orientações devidas.\n\n00:01:33.310 --> 00:01:39.270\nA segurança não é apenas cumprir\numa norma, ela é preservar\n\n00:01:39.290 --> 00:01:41.730\na saúde e a integridade de todos.\n"};
+const $ = s => document.querySelector(s);
+const vid = $('#vid');
+let state = {};            // {m1:{c:[...], done:false, doneAt:null}}
+let cur = {m:0, c:0};
+let isAdmin = false, uid = null, db = null, user = null, canWrite = true;
+let ccOn = false, blobs = {}, loadingKey = null;
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2600)}
+function ms(m){return state[m.id] || (state[m.id]={c:m.chapters.map(()=>false),done:false})}
+function fmt(s){s=Math.round(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+
+// ---------- persistência ----------
+function loadLocal(){try{const v=JSON.parse(localStorage.getItem('drm-integracao')||'{}');if(v&&typeof v==='object')state=v}catch(e){}}
+function saveLocal(){try{localStorage.setItem('drm-integracao',JSON.stringify(state))}catch(e){}}
+let saving=Promise.resolve();
+function save(){
+  saveLocal();
+  if(!db||!uid||!canWrite) return;
+  const body={progress:state, updatedAt:new Date().toISOString()};
+  saving=saving.then(()=>db.doc('progresso/'+uid).set(body)).catch(e=>{
+    if(e&&e.code==='invalid_argument'){canWrite=false}
+  });
+}
+
+// ---------- regras de liberação ----------
+function moduleUnlocked(i){
+  const m=MODULES[i]; if(!m.ready) return false; if(isAdmin||i===0) return true;
+  return ms(MODULES[i-1]).done;
+}
+function chapterUnlocked(i,j){
+  if(!moduleUnlocked(i)) return false; if(isAdmin||j===0) return true;
+  return ms(MODULES[i]).c[j-1];
+}
+
+// ---------- interface ----------
+function renderMods(){
+  const box=$('#mods'); box.innerHTML='';
+  MODULES.forEach((m,i)=>{
+    const st=ms(m), un=moduleUnlocked(i), nd=st.c.filter(Boolean).length;
+    const d=document.createElement('div');
+    d.className='mod'+(i===cur.m?' open cur':'')+(st.done?' done':'');
+    const h=document.createElement('button'); h.className='modhead'; h.disabled=!un;
+    h.innerHTML=`<div class="num">${st.done?'✓':String(m.n).padStart(2,'0')}</div><div><div class="t"></div><div class="s"></div></div>`+
+      (m.ready? (un?'':'<span class="lock">🔒 Bloqueado</span>') : '<span class="lock">Em breve</span>');
+    h.querySelector('.t').textContent='Módulo '+m.n+' • '+m.title;
+    h.querySelector('.s').textContent=m.ready? (nd+' de '+m.chapters.length+' partes assistidas') : m.sub;
+    h.onclick=()=>{ if(un){cur={m:i,c:firstOpen(i)}; select(true)} };
+    d.appendChild(h);
+    if(m.ready){
+      const ul=document.createElement('ul'); ul.className='chs'; ul.hidden=(i!==cur.m);
+      m.chapters.forEach((c,j)=>{
+        const li=document.createElement('li'); const b=document.createElement('button');
+        b.className='ch'+(st.c[j]?' ok':'')+(i===cur.m&&j===cur.c?' active':'');
+        b.disabled=!chapterUnlocked(i,j);
+        b.innerHTML=`<span class="dot">${st.c[j]?'<svg width="10" height="10" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#0f0f11" stroke-width="4" stroke-linecap="round"/></svg>':''}</span><span class="tt"></span><span class="d"></span>`;
+        b.querySelector('.tt').textContent=(j+1)+'. '+c.t;
+        b.querySelector('.d').textContent=b.disabled?'🔒':(DUR[c.f]?fmt(DUR[c.f]):'');
+        b.onclick=()=>{cur={m:i,c:j}; select(true)};
+        li.appendChild(b); ul.appendChild(li);
+      });
+      d.appendChild(ul);
+    }
+    box.appendChild(d);
+  });
+  const n=document.createElement('p'); n.className='note';
+  n.textContent='As partes são liberadas em sequência: ao terminar uma, a próxima é desbloqueada. Seu progresso fica salvo neste navegador.';
+  box.appendChild(n);
+  const done=MODULES.filter(m=>ms(m).done).length;
+  $('#ovbar').style.width=(done/MODULES.length*100)+'%';
+  $('#ovtxt').textContent=done+' de '+MODULES.length+' módulos concluídos';
+}
+function firstOpen(i){const st=ms(MODULES[i]);const k=st.c.findIndex(x=>!x);return k<0?0:k}
+
+function updateNow(){
+  const m=MODULES[cur.m], c=m.chapters[cur.c];
+  $('#nowk').textContent='Módulo '+m.n+' • '+m.title; $('#nowt').textContent=c.t;
+  $('#nowm').textContent='Parte '+(cur.c+1)+' de '+m.chapters.length+(DUR[c.f]?' • '+fmt(DUR[c.f]):'');
+  $('#prev').disabled=cur.c===0;
+  $('#next').disabled=cur.c>=m.chapters.length-1 || !chapterUnlocked(cur.m,cur.c+1);
+  $('#doneb').hidden=!ms(m).done;
+  $('#doneh').textContent='Módulo '+m.n+' concluído';
+  const nx=MODULES[cur.m+1];
+  $('#donep').textContent='Juntos, construímos o futuro do Grupo DR Machines. '+(nx&&nx.ready?'O Módulo '+nx.n+' • '+nx.title+' já está liberado na lista ao lado.':'O próximo módulo será liberado aqui assim que estiver disponível.');
+}
+
+// ---------- vídeo ----------
+async function fetchBlob(url,onp){
+  if(blobs[url]) return blobs[url];
+  const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status);
+  const total=+r.headers.get('content-length')||0;
+  if(!r.body||!total||!onp){ const b=await r.blob(); return blobs[url]=URL.createObjectURL(b); }
+  const rd=r.body.getReader(); const parts=[]; let got=0;
+  for(;;){const {done,value}=await rd.read(); if(done)break; parts.push(value); got+=value.length; onp(got/total)}
+  return blobs[url]=URL.createObjectURL(new Blob(parts,{type:url.endsWith('.vtt')?'text/vtt':'video/mp4'}));
+}
+async function select(autoplay){
+  renderMods(); updateNow();
+  const m=MODULES[cur.m], c=m.chapters[cur.c], key=c.f;
+  $('#ov').hidden=true; vid.pause();
+  loadingKey=key; $('#ld').hidden=false; $('#ldp').textContent='Carregando vídeo…';
+  try{
+    let vtt=null; if(VTT[key]){ vtt=blobs[key+'.vtt']||(blobs[key+'.vtt']=URL.createObjectURL(new Blob([VTT[key]],{type:'text/vtt'}))); }
+    vid.innerHTML=''; vid.src=key+'.mp4';
+    if(vtt){ const tr=document.createElement('track'); tr.kind='subtitles'; tr.label='Português'; tr.srclang='pt-BR'; tr.src=vtt; vid.appendChild(tr);
+      tr.addEventListener('load',()=>applyCC()); setTimeout(applyCC,50); }
+    await new Promise((res,rej)=>{ const ok=()=>{cl();res()}, er=()=>{cl();rej()}; const cl=()=>{vid.removeEventListener('loadeddata',ok);vid.removeEventListener('error',er)}; vid.addEventListener('loadeddata',ok); vid.addEventListener('error',er); });
+    if(loadingKey!==key) return;
+    $('#ld').hidden=true;
+    if(autoplay){ vid.play().catch(()=>{ showOverlay('▶ Continuar', c.t, 'Toque para assistir.') }); }
+    prefetch();
+  }catch(e){
+    $('#ld').hidden=true; showOverlay('Tentar novamente', 'Não foi possível carregar o vídeo', 'Verifique a conexão e tente de novo.');
+  }
+}
+function prefetch(){}
+function showOverlay(btn,t,p){ $('#ovb').textContent=btn; $('#ovt').textContent=t; $('#ovp').textContent=p; $('#ovk').textContent='Módulo '+MODULES[cur.m].n+' • '+MODULES[cur.m].title; $('#ov').hidden=false; }
+function applyCC(){ for(const t of vid.textTracks) t.mode=ccOn?'showing':'hidden'; }
+$('#cc').onclick=()=>{ccOn=!ccOn; $('#cc').textContent='Legendas: '+(ccOn?'ligadas':'desligadas'); $('#cc').setAttribute('aria-pressed',ccOn); applyCC()};
+$('#ovb').onclick=()=>select(true);
+$('#prev').onclick=()=>{ if(cur.c>0){cur.c--; select(true)} };
+$('#next').onclick=()=>{ if(chapterUnlocked(cur.m,cur.c+1)){cur.c++; select(true)} };
+
+function markWatched(){
+  const m=MODULES[cur.m], st=ms(m);
+  if(st.c[cur.c]) return;
+  st.c[cur.c]=true;
+  if(st.c.every(Boolean)&&!st.done){ st.done=true; st.doneAt=new Date().toISOString(); toast('Módulo '+m.n+' concluído!') }
+  save(); renderMods(); updateNow();
+}
+vid.addEventListener('timeupdate',()=>{ if(vid.duration && vid.currentTime>=vid.duration*0.97) markWatched(); });
+vid.addEventListener('ended',()=>{
+  markWatched();
+  const m=MODULES[cur.m];
+  if(cur.c<m.chapters.length-1){ cur.c++; select(true); }
+  else{
+    const nx=MODULES[cur.m+1];
+    if(nx&&nx.ready&&moduleUnlocked(cur.m+1)){ showOverlay('▶ Ir para o Módulo '+nx.n,'Módulo '+m.n+' concluído','Próximo: Módulo '+nx.n+' • '+nx.title+'.'); $('#ovb').onclick=()=>{ $('#ovb').onclick=()=>select(true); cur={m:cur.m+1,c:firstOpen(cur.m+1)}; select(true) }; }
+    else showOverlay('↺ Assistir de novo','Módulo '+m.n+' concluído','Juntos, construímos o futuro do Grupo DR Machines.');
+  }
+});
+
+// ---------- abas ----------
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  $('#p-curso').hidden=b.dataset.tab!=='curso'; $('#p-equipe').hidden=b.dataset.tab!=='equipe';
+  if(b.dataset.tab==='equipe') loadTeam();
+});
+
+// ---------- acompanhamento (administradores) ----------
+let teamSub=null;
+function loadTeam(){
+  if(teamSub||!db) { if(!db) $('#team').innerHTML='<div class="empty">O acompanhamento não está disponível nesta visualização.</div>'; return; }
+  $('#team').innerHTML='<div class="empty">Carregando…</div>';
+  const timer=setTimeout(()=>{ $('#team').innerHTML='<div class="empty">Não foi possível carregar os dados agora.</div>' },10000);
+  teamSub=db.collection('progresso').onSnapshot(async snap=>{
+    if(!snap.metadata.fromCache) clearTimeout(timer);
+    const rows=snap.docs.filter(d=>d.exists).map(d=>({id:d.id, ...(d.data()||{})}));
+    if(!rows.length){ $('#team').innerHTML='<div class="empty">Ninguém começou o treinamento ainda.</div>'; return; }
+    let ps={}; try{ ps=await user.profiles(rows.map(r=>r.id)) }catch(e){}
+    const t=document.createElement('table');
+    const RM=MODULES.filter(m=>m.ready);
+    t.innerHTML='<thead><tr><th>Colaborador</th>'+RM.map(m=>'<th>Módulo '+m.n+' • '+m.title+'</th>').join('')+'<th>Último acesso</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    rows.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).forEach(r=>{
+      const tr=document.createElement('tr');
+      const nm=document.createElement('td'); nm.textContent=(ps[r.id]&&ps[r.id].name)||'Colaborador'; tr.appendChild(nm);
+      for(const m of RM){
+        const pm=(r.progress&&r.progress[m.id])||{c:[]}; const n=(pm.c||[]).filter(Boolean).length, tot=m.chapters.length;
+        const td=document.createElement('td');
+        td.innerHTML=`<span class="minibar"><i style="width:${n/tot*100}%"></i></span>`+(pm.done?'<span class="pill ok">Concluído</span>':(n?`<span class="pill mid">${n} de ${tot}</span>`:'<span class="pill no">Não iniciado</span>'));
+        tr.appendChild(td);
+      }
+      const up=document.createElement('td'); up.textContent=r.updatedAt?new Date(r.updatedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
+      tr.appendChild(up); tb.appendChild(tr);
+    });
+    t.appendChild(tb); $('#team').innerHTML=''; $('#team').appendChild(t);
+  }, e=>{ clearTimeout(timer); $('#team').innerHTML='<div class="empty">Não foi possível carregar os dados agora.</div>'; });
+}
+
+// ---------- início ----------
+loadLocal();
+cur={m:0,c:firstOpen(0)};
+renderMods(); updateNow();
+/* progresso salvo neste navegador */
+</script>
+</body>
+</html>
