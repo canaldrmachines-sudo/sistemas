@@ -12,12 +12,38 @@ const MODULES = [
     {t:'Uniforme e vestimenta', f:'m2/c2'},
     {t:'Segurança no trabalho', f:'m2/c3'},
   ]},
-  {id:'m3', n:3, title:'Jornada e registro de ponto', sub:'Em produção', ready:false, chapters:[]},
-  {id:'m4', n:4, title:'Rotinas operacionais', sub:'Em produção', ready:false, chapters:[]},
-  {id:'m5', n:5, title:'Direitos, benefícios e políticas', sub:'Em produção', ready:false, chapters:[]},
-  {id:'m6', n:6, title:'Integração e compromisso', sub:'Em produção', ready:false, chapters:[]},
+  {id:'m3', n:3, title:'Jornada e registro de ponto', sub:'Registro de ponto, intervalos, ajustes e banco de horas', ready:true, chapters:[
+    {t:'Por que registramos o ponto', f:'m3/c1'},
+    {t:'Equipamentos para registro de ponto', f:'m3/c2'},
+    {t:'Equipe administrativa', f:'m3/c3'},
+    {t:'Equipe técnica externa', f:'m3/c4'},
+    {t:'Exemplos práticos para os técnicos', f:'m3/c5'},
+    {t:'Intervalo de almoço', f:'m3/c6'},
+    {t:'Pausa do café da manhã', f:'m3/c7'},
+    {t:'Ajustes de ponto, faltas e atrasos', f:'m3/c8'},
+    {t:'Faltas, DSR e banco de horas', f:'m3/c9'},
+  ]},
+  {id:'m4', n:4, title:'Rotinas operacionais', sub:'Atendimento técnico, Auvo, despesas e abastecimento', ready:true, chapters:[
+    {t:'Atendimento técnico profissional', f:'m4/c1'},
+    {t:'Sistema Auvo', f:'m4/c2'},
+    {t:'Despesas corporativas', f:'m4/c3'},
+    {t:'Abastecimento de veículos', f:'m4/c4'},
+  ]},
+  {id:'m5', n:5, title:'Direitos, benefícios e políticas', sub:'Férias, Day Off, desenvolvimento e Gympass', ready:true, chapters:[
+    {t:'Política de férias', f:'m5/c1'},
+    {t:'Benefício Day Off', f:'m5/c2'},
+    {t:'Desenvolvimento profissional', f:'m5/c3'},
+    {t:'Saúde e bem-estar: Gympass', f:'m5/c4'},
+  ]},
+  {id:'m6', n:6, title:'Integração e compromisso', sub:'Situações do dia a dia, compromissos e mensagem final', ready:true, chapters:[
+    {t:'Situações do dia a dia', f:'m6/c1'},
+    {t:'Respostas', f:'m6/c2'},
+    {t:'O que esperamos de você', f:'m6/c3'},
+    {t:'Nosso compromisso com você', f:'m6/c4'},
+    {t:'Mensagem final e próximos passos', f:'m6/c5'},
+  ]},
 ];
-const DUR = {"m1/c1": 64.7, "m1/c2": 82.5, "m1/c3": 90.9, "m1/c4": 76.2, "m1/c5": 62.2, "m1/c6": 79.1, "m2/c1": 60.9, "m2/c2": 61.0, "m2/c3": 110.6};
+const DUR = {"m1/c1": 64.7, "m1/c2": 82.5, "m1/c3": 90.9, "m1/c4": 76.2, "m1/c5": 62.2, "m1/c6": 79.1, "m2/c1": 60.9, "m2/c2": 61.0, "m2/c3": 110.6, "m3/c1": 76.7, "m3/c2": 93.3, "m3/c3": 89.3, "m3/c4": 90.4, "m3/c5": 71.2, "m3/c6": 118.1, "m3/c7": 61.3, "m3/c8": 83.4, "m3/c9": 178.7, "m4/c1": 93.4, "m4/c2": 99.4, "m4/c3": 87.3, "m4/c4": 37.4, "m5/c1": 134.2, "m5/c2": 69.1, "m5/c3": 57.6, "m5/c4": 100.8, "m6/c1": 69.3, "m6/c2": 95.2, "m6/c3": 73.8, "m6/c4": 84.8, "m6/c5": 137.3};
 const VTT = window.VTT || {};
 const $ = s => document.querySelector(s);
 const vid = $('#vid');
