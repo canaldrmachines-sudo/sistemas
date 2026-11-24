@@ -110,18 +110,17 @@ async function select(autoplay){
   const m=MODULES[cur.m], c=m.chapters[cur.c], key=c.f;
   $('#ov').hidden=true; vid.pause();
   loadingKey=key; $('#ld').hidden=false; $('#ldp').textContent='Carregando vídeo…';
-  try{
-    let vtt=null; if(VTT[key]){ vtt=blobs[key+'.vtt']||(blobs[key+'.vtt']=URL.createObjectURL(new Blob([VTT[key]],{type:'text/vtt'}))); }
-    vid.innerHTML=''; vid.src=key+'.mp4';
-    if(vtt){ const tr=document.createElement('track'); tr.kind='subtitles'; tr.label='Português'; tr.srclang='pt-BR'; tr.src=vtt; vid.appendChild(tr);
-      tr.addEventListener('load',()=>applyCC()); setTimeout(applyCC,50); }
-    await new Promise((res,rej)=>{ const ok=()=>{cl();res()}, er=()=>{cl();rej()}; const cl=()=>{vid.removeEventListener('loadeddata',ok);vid.removeEventListener('error',er)}; vid.addEventListener('loadeddata',ok); vid.addEventListener('error',er); });
-    if(loadingKey!==key) return;
-    $('#ld').hidden=true;
-    if(autoplay){ vid.play().catch(()=>{ showOverlay('▶ Continuar', c.t, 'Toque para assistir.') }); }
-  }catch(e){
-    $('#ld').hidden=true; showOverlay('Tentar novamente', 'Não foi possível carregar o vídeo', 'Verifique a conexão e tente de novo.');
-  }
+  let vtt=null; if(VTT[key]){ vtt=blobs[key+'.vtt']||(blobs[key+'.vtt']=URL.createObjectURL(new Blob([VTT[key]],{type:'text/vtt'}))); }
+  vid.innerHTML=''; vid.preload='auto'; vid.src=key+'.mp4';
+  if(vtt){ const tr=document.createElement('track'); tr.kind='subtitles'; tr.label='Português'; tr.srclang='pt-BR'; tr.src=vtt; vid.appendChild(tr);
+    tr.addEventListener('load',()=>applyCC()); setTimeout(applyCC,50); }
+  vid.load();
+  const pronto=()=>{ if(loadingKey===key) $('#ld').hidden=true; };
+  vid.addEventListener('loadedmetadata',pronto,{once:true});
+  vid.addEventListener('playing',pronto,{once:true});
+  setTimeout(pronto,6000);
+  vid.addEventListener('error',()=>{ if(loadingKey!==key) return; $('#ld').hidden=true; showOverlay('Tentar novamente','Não foi possível carregar o vídeo','Verifique a conexão e tente de novo.'); },{once:true});
+  if(autoplay){ vid.play().catch(()=>{ if(loadingKey===key){ $('#ld').hidden=true; showOverlay('▶ Continuar', c.t, 'Toque para assistir.'); } }); }
 }
 function showOverlay(btn,t,p){ $('#ovb').textContent=btn; $('#ovt').textContent=t; $('#ovp').textContent=p; $('#ovk').textContent='Módulo '+MODULES[cur.m].n+' • '+MODULES[cur.m].title; $('#ov').hidden=false; }
 function applyCC(){ for(const t of vid.textTracks) t.mode=ccOn?'showing':'hidden'; }
